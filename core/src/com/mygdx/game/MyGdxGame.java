@@ -1,38 +1,66 @@
 package com.mygdx.game;
 
-import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Timer;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import sun.applet.Main;
 
 import java.awt.*;
 import java.security.spec.MGF1ParameterSpec;
 
-public class MyGdxGame extends ApplicationAdapter  {
-	private Texture bodyImg, wheelImg, wheelImg2, newBodyImg, backgroundImg;
-	private Rectangle car;
-	private Sprite playerCarSprite, playerFrontWheel, playerBackWheel, playerCarNewSprite, backgroundSprite;
-	private SpriteBatch batch;
-	private BitmapFont font;
+public class MyGdxGame extends Game {
+	public Texture bodyImg, wheelImg, wheelImg2, newBodyImg, backgroundImg;
+	public Rectangle testCrash;
+	public Sprite playerCarSprite, playerFrontWheel, playerBackWheel, playerCarNewSprite, backgroundSprite, staticSprite;
+	public SpriteBatch batch;
+	public BitmapFont font;
+	private Table table;
 	private OrthographicCamera camera;
 	private Vector2 velocity;
-	private CarTwo playerCar;
+	public CarTwo playerCar;
+	int value;
+	Dialog dialog;
+	Stage stage;
+	TextButton button;
+	TextButton.TextButtonStyle style;
+	Skin skin;
+	TextureAtlas atlas;
+	MainMenuScreen mainMenuScreen;
+	MainScreen mainScreen;
+	StaticCar staticCar;
+	public com.badlogic.gdx.math.Polygon testPolygon;
+	public ShapeRenderer shapeRenderer;
 	private float trackX, trackY, speed, delta, midXPos, midYPos;
 	private float acc, friction, rotation, rotationStep, topVelocity;
 
 	public void create () {
-		float w = Gdx.graphics.getWidth();
-		float h = Gdx.graphics.getHeight();
+		mainMenuScreen = new MainMenuScreen(this);
+		mainScreen = new MainScreen(this);
+		setScreen(mainMenuScreen);
+		value = 0;
+		shapeRenderer = new ShapeRenderer();
 
 		backgroundImg = new Texture(Gdx.files.internal("Background.png"));
-		bodyImg = new Texture(Gdx.files.internal("Grey.png"));
+		//bodyImg = new Texture(Gdx.files.internal("Grey.png"));
 		wheelImg = new Texture(Gdx.files.internal("tut1.png"));
-		newBodyImg = new Texture(Gdx.files.internal("blank-1299404_640.png"));
+		bodyImg = new Texture(Gdx.files.internal("blank-1299404_640.png"));
 		font = new BitmapFont();
 
 		batch = new SpriteBatch();
@@ -40,21 +68,63 @@ public class MyGdxGame extends ApplicationAdapter  {
 		playerCarSprite = new Sprite(bodyImg);
 		playerFrontWheel = new Sprite(wheelImg);
 		playerBackWheel = new Sprite(wheelImg);
-		playerCarNewSprite = new Sprite(newBodyImg);
+		playerCarNewSprite = new Sprite(bodyImg);
+		staticSprite = new Sprite(bodyImg);
 
 		delta = 1/60;
 
 		playerCarNewSprite.setOrigin(playerCarNewSprite.getWidth() / 2, playerCarNewSprite.getHeight() / 2);
 		playerCarNewSprite.setSize(120, 50);
 		backgroundSprite.setSize(1280, 720);
+		staticSprite.setSize(120, 50);
 		font.setColor(Color.RED);
 
-		playerCar = new CarTwo(playerCarNewSprite, playerFrontWheel, playerBackWheel);
+		testCrash = new Rectangle(20, 30, 20 , 20);
+		testPolygon = new com.badlogic.gdx.math.Polygon(new float[] {0, 0 , testCrash.width, 0 , testCrash.width, testCrash.height, 0, testCrash.height});
+		testPolygon.setOrigin(testCrash.width/2 , testCrash.height/2);
 
+
+		playerCar = new CarTwo(playerCarNewSprite, playerFrontWheel, playerBackWheel);
+		this.
 		acc = 0.2f;
 		friction = 0.01f;
+
+		skin = new Skin(Gdx.files.internal("uiskin.json"));
+		stage = new Stage(new ScreenViewport());
+		button = new TextButton("Add Car",skin,"default");
+		button.setWidth(200);
+		button.setHeight(50);
+		button.setX(0);
+		button.setY(400);
+		button.setColor(Color.RED);
+
+		dialog = new Dialog("Click Where you would like the car placed!",skin);
+		dialog.setColor(Color.RED);
+		button.addListener(new ClickListener(){
+			@Override
+			public void clicked(InputEvent event, float x, float y) {
+				dialog.show(stage);
+				int counter = 0;
+				dialog.setX(360);
+				dialog.setY(200);
+				Timer.schedule(new Timer.Task() {
+					@Override
+					public void run() {
+						staticCar  = new StaticCar(staticSprite, playerFrontWheel, playerBackWheel, (int) (Gdx.input.getX() - (staticSprite.getWidth() / 2)), (int) (720 - Gdx.input.getY() - (staticSprite.getHeight() / 2)));
+						value = 1;
+						dialog.hide();
+					}
+
+				}, 2);
+			}
+		});
+		stage.addActor(button);
+
+
+		Gdx.input.setInputProcessor(stage);
 	}
 
+	/*
 	@Override
 	public void render () {
 
@@ -71,17 +141,28 @@ public class MyGdxGame extends ApplicationAdapter  {
 				//playerCarSprite.getWidth(), playerCarSprite.getHeight(), 1, 1, playerCarSprite.getRotation());
 		backgroundSprite.draw(batch);
 		playerCarNewSprite.draw(batch);
+		shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+		shapeRenderer.setColor(Color.RED);
+		shapeRenderer.rect(testCrash.x, testCrash.y, testCrash.width, testCrash.height);
+		shapeRenderer.polygon(playerCar.getBoundingPoly().getTransformedVertices());
+		testPolygon.setPosition(testCrash.x, testCrash.y);
+
 		font.draw(batch, "Coordinates of car : " + playerCar.carLocation.x + " , " + playerCar.carLocation.y + "\nSpeed of car: " + playerCar.getCarSpeed()
-							 + "\nCar heading: " + (Math.toDegrees(playerCar.getCarHeading())+ 90) + "\nSteer Angle: " + Math.toDegrees(playerCar.getSteerAngle()),10, 680 );
+							 + "\nCar heading: " + (Math.toDegrees(playerCar.getCarHeading())+ 90) + "\nSteer Angle: " + Math.toDegrees(playerCar.getSteerAngle()),10, 680);
 		//batch.draw(playerCarSprite, playerCar.carLocation.x, playerCar.carLocation.y);
 		batch.draw(playerBackWheel, playerCar.backWheelLoc.x, playerCar.backWheelLoc.y, 20 , 10);
 		batch.draw(playerFrontWheel, playerCar.frontWheelLoc.x, playerCar.frontWheelLoc.y, 20, 10);
 		updatePlayerCar();
+		if (Intersector.overlapConvexPolygons(testPolygon, playerCar.getBoundingPoly())){
+			System.out.println("COLLISION");
+			playerCar.setCarSpeed(0);
+		}
 		batch.end();
+		shapeRenderer.end();
 	}
+	*/
 
-
-	private void updatePlayerCar() {
+	public void updatePlayerCar() {
 
 		final float subtractSteer = 0.25f ;
 		float subtractSteer2 = -0.2f;
@@ -127,6 +208,7 @@ public class MyGdxGame extends ApplicationAdapter  {
 		batch.dispose();
 	}
 
+
 	@Override
 	public void resize(int width, int height){
 
@@ -142,4 +224,5 @@ public class MyGdxGame extends ApplicationAdapter  {
 	public void resume(){
 
 	}
+
 }

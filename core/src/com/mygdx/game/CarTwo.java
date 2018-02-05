@@ -2,6 +2,8 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Polygon;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.sun.org.apache.bcel.internal.generic.NEW;
 
@@ -13,6 +15,8 @@ public class CarTwo {
     Sprite car, frontWheel, backWheel;
     Vector2 carLocation, backWheelLoc, frontWheelLoc;
     private float carSpeed, steerAngle,  dt;
+    private Polygon boundingPoly;
+    private Rectangle bounds;
     float carHeading, maxSteerAngle, minSteerAngle, maxSpeed, wheelBase;
 
     public CarTwo(Sprite car, Sprite frontWheel, Sprite backWheel){
@@ -20,7 +24,7 @@ public class CarTwo {
         this.car = car;
         this.frontWheel = frontWheel;
         this.backWheel = backWheel;
-
+        wheelBase = car.getWidth() - 40;
         carLocation = new Vector2(640,360);
         this.car.setOrigin(this.car.getWidth()/2, this.car.getHeight()/2);
         backWheelLoc = new Vector2();
@@ -31,6 +35,10 @@ public class CarTwo {
 
         frontWheel.setX(frontWheelLoc.x);
         frontWheel.setY(frontWheelLoc.y);
+
+        bounds = new Rectangle((carLocation.x -  (wheelBase /2)), (carLocation.y - car.getHeight()/2) , car.getWidth(), car.getHeight());
+        boundingPoly = new Polygon(new float[]{0, 0, bounds.width, 0 , bounds.width, bounds.height, 0, bounds.height});
+        boundingPoly.setOrigin(bounds.width/2, bounds.height/2);
 
         carSpeed = 0f;
         maxSteerAngle = 0.65f;
@@ -74,6 +82,9 @@ public class CarTwo {
         carLocation.y = (frontWheelLoc.y + backWheelLoc.y) / 2;
 
         carHeading = MathUtils.atan2(frontWheelLoc.y - backWheelLoc.y, frontWheelLoc.x - backWheelLoc.x);
+        boundingPoly.setPosition((carLocation.x -  (wheelBase /2)),(carLocation.y - car.getHeight()/2));
+        boundingPoly.setRotation((float)Math.toDegrees(carHeading));
+
         ;
         //System.out.println(Math.toDegrees(maxSteerAngle));
         //System.out.println(Math.toDegrees(minSteerAngle));
@@ -107,5 +118,9 @@ public class CarTwo {
 
     public void setCarHeading(float carHeading) {
         this.carHeading = carHeading;
+    }
+
+    public Polygon getBoundingPoly(){
+            return boundingPoly;
     }
 }
