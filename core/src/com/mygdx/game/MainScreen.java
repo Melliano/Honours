@@ -61,27 +61,9 @@ public class MainScreen implements Screen {
         game.batch.draw(game.playerBackWheel, game.playerCar.backWheelLoc.x, game.playerCar.backWheelLoc.y, 20 , 10);
         game.batch.draw(game.playerFrontWheel, game.playerCar.frontWheelLoc.x, game.playerCar.frontWheelLoc.y, 20, 10);
         game.updatePlayerCar();
-        if (Intersector.overlapConvexPolygons(game.testPolygon, game.playerCar.getBoundingPoly())){
-            System.out.println("COLLISION");
-            game.playerCar.setCarSpeed(0);
-        }
+        collisionCheck();
         if (game.value == 1){
-            game.staticSprite.setX(game.staticCar.staticCarLocation.x);
-            game.staticSprite.setY(game.staticCar.staticCarLocation.y);
-            game.staticSprite.setRotation(game.staticCar.getCarHeading());
-            game.staticSprite.draw(game.batch);
-            //.shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-            game.shapeRenderer.setColor(Color.RED);
-            game.shapeRenderer.polygon(game.staticCar.getStaticBoundingPoly().getTransformedVertices());
-            if (Gdx.input.isTouched()){
-                if (game.staticCar.getStaticBoundingPoly().contains((int) (Gdx.input.getX()), (int) (720 - Gdx.input.getY()))){
-                    carClicked = true;
-                    System.out.println("Car Clicked");
-                }
-            }
-            if (carClicked = true){
-                rotateStaticCar();
-            }
+            editStaticCar();
         }
         game.batch.end();
         game.shapeRenderer.end();
@@ -89,20 +71,71 @@ public class MainScreen implements Screen {
         game.stage.draw();
     }
 
-    public void rotateStaticCar(){
-        if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT)){
-            System.out.println("ROTATING " + game.staticCar.getCarHeading());
-            game.staticCar.setCarHeading(game.staticCar.getCarHeading() + 15);
-            game.staticSprite.setRotation(game.staticCar.getCarHeading());
-            game.staticCar.getStaticBoundingPoly().setRotation(game.staticCar.getCarHeading());
+    public void collisionCheck(){
+        for (int i = 1; i < game.staticCarList.size(); i++){
+            if (Intersector.overlapConvexPolygons(game.staticCarList.get(i).getStaticBoundingPoly(), game.playerCar.getBoundingPoly())){
+                System.out.println("Collision");
+                game.playerCar.setCarSpeed(0);
+            }
         }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)){
-            game.staticCar.setCarHeading(game.staticCar.getCarHeading() - 15);
-            game.staticSprite.setRotation(game.staticCar.getCarHeading());
-            game.staticCar.getStaticBoundingPoly().setRotation(game.staticCar.getCarHeading());
+    }
+
+    public void rotateStaticCar(int carNum){
+            if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT)){
+                System.out.println("ROTATING " + game.staticCarList.get(carNum).getCarHeading());
+                game.staticCarList.get(carNum).setCarHeading(game.staticCarList.get(carNum).getCarHeading() + 15);
+                game.staticCarList.get(carNum).staticCar.setRotation(game.staticCarList.get(carNum).getCarHeading());
+                game.staticCarList.get(carNum).getStaticBoundingPoly().setRotation(game.staticCarList.get(carNum).getCarHeading());
+            }
+            if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)){
+                game.staticCarList.get(carNum).setCarHeading(game.staticCarList.get(carNum).getCarHeading() - 15);
+                game.staticCarList.get(carNum).staticCar.setRotation(game.staticCarList.get(carNum).getCarHeading());
+                game.staticCarList.get(carNum).getStaticBoundingPoly().setRotation(game.staticCarList.get(carNum).getCarHeading());
+            }
+            if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+                System.out.println("Rotating stopped");
+                game.isCarClicked = false;
+            }
+    }
+
+    public void editStaticCar(){
+        for (int i = 1; i < game.staticCarList.size(); i++){
+            game.staticCarList.get(i).staticCar.setX(game.staticCarList.get(i).staticCarLocation.x);
+            game.staticCarList.get(i).staticCar.setY(game.staticCarList.get(i).staticCarLocation.y);
+            game.staticCarList.get(i).staticCar.setRotation(game.staticCarList.get(i).getCarHeading());
+            game.staticCarList.get(i).staticCar.draw(game.batch);
         }
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            carClicked = false;
+        /*
+        game.staticCarList.get(1).staticCar.setX(game.staticCarList.get(1).staticCarLocation.x);
+        game.staticCarList.get(1).staticCar.setY(game.staticCarList.get(1).staticCarLocation.y);
+        game.staticCarList.get(1).staticCar.setRotation(game.staticCarList.get(1).getCarHeading());
+        //game.staticSprite.setX(game.staticCar.staticCarLocation.x);
+        //game.staticSprite.setY(game.staticCar.staticCarLocation.y);
+       // game.staticSprite.setRotation(game.staticCar.getCarHeading());
+       // game.staticSprite.draw(game.batch);
+        game.staticCarList.get(1).staticCar.draw(game.batch);
+        */
+        //.shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        game.shapeRenderer.setColor(Color.RED);
+        game.isCarClicked = false;
+        for (int i = 1; i < game.staticCarList.size(); i++){
+            game.shapeRenderer.polygon(game.staticCarList.get(i).getStaticBoundingPoly().getTransformedVertices());
+            if (game.staticCarList.get(i).getStaticBoundingPoly().contains((int) (Gdx.input.getX()), (int) (720 - Gdx.input.getY()))){
+                game.isCarClicked = true;
+                System.out.println("Car Clicked");
+                //System.out.println("Can rotate...");
+                rotateStaticCar(i);
+                if (Gdx.input.isTouched()){
+                    System.out.println("Drag car");
+                    game.staticCarList.get(i).staticCarLocation.x = (Gdx.input.getX() - (game.staticSprite.getWidth() / 2));
+                    game.staticCarList.get(i).staticCarLocation.y = (720 - Gdx.input.getY() - (game.staticSprite.getHeight() / 2));
+                    game.staticCarList.get(i).getStaticBoundingPoly().setPosition(game.staticCarList.get(i).staticCarLocation.x, game.staticCarList.get(i).staticCarLocation.y);
+                }
+            }
+            else {
+                game.isCarClicked = false;
+                System.out.println("Car not clicked");
+            }
         }
     }
 

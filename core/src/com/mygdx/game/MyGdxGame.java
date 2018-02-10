@@ -24,18 +24,20 @@ import sun.applet.Main;
 
 import java.awt.*;
 import java.security.spec.MGF1ParameterSpec;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class MyGdxGame extends Game {
 	public Texture bodyImg, wheelImg, wheelImg2, newBodyImg, backgroundImg;
 	public Rectangle testCrash;
-	public Sprite playerCarSprite, playerFrontWheel, playerBackWheel, playerCarNewSprite, backgroundSprite, staticSprite;
+	public Sprite playerCarSprite, playerFrontWheel, playerBackWheel, playerCarNewSprite, backgroundSprite, staticSprite, staticSprite2, staticSprite3, staticSprite4, staticSprite5;
 	public SpriteBatch batch;
 	public BitmapFont font;
 	private Table table;
 	private OrthographicCamera camera;
 	private Vector2 velocity;
 	public CarTwo playerCar;
-	int value;
+	int value, counter;
 	Dialog dialog;
 	Stage stage;
 	TextButton button;
@@ -45,10 +47,12 @@ public class MyGdxGame extends Game {
 	MainMenuScreen mainMenuScreen;
 	MainScreen mainScreen;
 	StaticCar staticCar;
+	boolean isCarClicked;
 	public com.badlogic.gdx.math.Polygon testPolygon;
 	public ShapeRenderer shapeRenderer;
 	private float trackX, trackY, speed, delta, midXPos, midYPos;
 	private float acc, friction, rotation, rotationStep, topVelocity;
+	ArrayList<StaticCar> staticCarList;
 
 	public void create () {
 		mainMenuScreen = new MainMenuScreen(this);
@@ -56,6 +60,7 @@ public class MyGdxGame extends Game {
 		setScreen(mainMenuScreen);
 		value = 0;
 		shapeRenderer = new ShapeRenderer();
+		isCarClicked = false;
 
 		backgroundImg = new Texture(Gdx.files.internal("Background.png"));
 		//bodyImg = new Texture(Gdx.files.internal("Grey.png"));
@@ -98,24 +103,28 @@ public class MyGdxGame extends Game {
 		button.setY(400);
 		button.setColor(Color.RED);
 
+		staticCarList =  new ArrayList<StaticCar>(Arrays.asList(new StaticCar(staticSprite, playerFrontWheel, playerBackWheel, 200, 200)));
+
 		dialog = new Dialog("Click Where you would like the car placed!",skin);
 		dialog.setColor(Color.RED);
+		counter = 0;
 		button.addListener(new ClickListener(){
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				dialog.show(stage);
-				int counter = 0;
 				dialog.setX(360);
 				dialog.setY(200);
-				Timer.schedule(new Timer.Task() {
+				counter += 1;
+				Timer.Task schedule = Timer.schedule(new Timer.Task() {
 					@Override
 					public void run() {
-						staticCar  = new StaticCar(staticSprite, playerFrontWheel, playerBackWheel, (int) (Gdx.input.getX() - (staticSprite.getWidth() / 2)), (int) (720 - Gdx.input.getY() - (staticSprite.getHeight() / 2)));
+						staticCarList.add(new StaticCar(staticSprite, playerFrontWheel, playerBackWheel, (int) (Gdx.input.getX() - (staticSprite.getWidth() / 2)), (int) (720 - Gdx.input.getY() - (staticSprite.getHeight() / 2))));
+						//staticCar = new StaticCar(staticSprite, playerFrontWheel, playerBackWheel, (int) (Gdx.input.getX() - (staticSprite.getWidth() / 2)), (int) (720 - Gdx.input.getY() - (staticSprite.getHeight() / 2)));
 						value = 1;
 						dialog.hide();
+						System.out.println(counter);
 					}
-
-				}, 2);
+				}, 1);
 			}
 		});
 		stage.addActor(button);
