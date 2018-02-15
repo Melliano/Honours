@@ -25,9 +25,14 @@ public class MainScreen implements Screen {
     Skin skin;
     Stage stage;
     TextButton button;
+    String behindAlert, frontAlert, leftAlert, rightAlert;
     boolean carClicked;
     public MainScreen(MyGdxGame game){
         this.game = game;
+        behindAlert = "Nothing Detected";
+        frontAlert = "Nothing Detected";
+        leftAlert = "Nothing Detected";
+        rightAlert = "Nothing Detected";
     }
     @Override
     public void show() {
@@ -52,16 +57,25 @@ public class MainScreen implements Screen {
         game.shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         game.shapeRenderer.setColor(Color.RED);
         game.shapeRenderer.rect(game.testCrash.x, game.testCrash.y, game.testCrash.width, game.testCrash.height);
-        game.shapeRenderer.polygon(game.playerCar.getBoundingPoly().getTransformedVertices());
+        //game.shapeRenderer.polygon(game.playerCar.getBoundingPoly().getTransformedVertices());
+        //game.shapeRenderer.polygon(game.playerCar.getSensorBoundingPoly().getTransformedVertices());
+        game.shapeRenderer.polygon(game.playerCar.getLeftBoundingPoly().getTransformedVertices());
+        game.shapeRenderer.polygon(game.playerCar.getRightBoundingPoly().getTransformedVertices());
+        game.shapeRenderer.polygon(game.playerCar.getFrontBoundingPoly().getTransformedVertices());
+        game.shapeRenderer.polygon(game.playerCar.getBackBoundingPoly().getTransformedVertices());
+
+        //game.playerCar.frontSensor.draw(game.batch);
         game.testPolygon.setPosition(game.testCrash.x, game.testCrash.y);
 
         game.font.draw(game.batch, "Coordinates of car : " + game.playerCar.carLocation.x + " , " + game.playerCar.carLocation.y + "\nSpeed of car: " + game.playerCar.getCarSpeed()
-                + "\nCar heading: " + (Math.toDegrees(game.playerCar.getCarHeading())+ 90) + "\nSteer Angle: " + Math.toDegrees(game.playerCar.getSteerAngle()),10, 680);
+                + "\nCar heading: " + (Math.toDegrees(game.playerCar.getCarHeading())+ 90) + "\nSteer Angle: " + Math.toDegrees(game.playerCar.getSteerAngle())
+                    + "\nFront Sensor: " + frontAlert + "\nBack Sensor: " + behindAlert + "\nLeft Side Sensor: " + leftAlert +  "\nRight Side Sensor: " + rightAlert,10, 680);
         //batch.draw(playerCarSprite, playerCar.carLocation.x, playerCar.carLocation.y);
         game.batch.draw(game.playerBackWheel, game.playerCar.backWheelLoc.x, game.playerCar.backWheelLoc.y, 20 , 10);
         game.batch.draw(game.playerFrontWheel, game.playerCar.frontWheelLoc.x, game.playerCar.frontWheelLoc.y, 20, 10);
         game.updatePlayerCar();
         collisionCheck();
+        sensorCheck();
         if (game.value == 1){
             editStaticCar();
         }
@@ -76,6 +90,37 @@ public class MainScreen implements Screen {
             if (Intersector.overlapConvexPolygons(game.staticCarList.get(i).getStaticBoundingPoly(), game.playerCar.getBoundingPoly())){
                 System.out.println("Collision");
                 game.playerCar.setCarSpeed(0);
+            }
+        }
+    }
+
+    public void sensorCheck(){
+        for (int i = 1; i < game.staticCarList.size(); i++){
+            if (Intersector.overlapConvexPolygons(game.staticCarList.get(i).getStaticBoundingPoly(), game.playerCar.getBackBoundingPoly())){
+                System.out.println("CAR DETECTED BEHIND");
+                behindAlert = "CAR DETECTED BEHIND";
+            }
+            else {
+                behindAlert = "Nothing Detected";
+            }
+            if (Intersector.overlapConvexPolygons(game.staticCarList.get(i).getStaticBoundingPoly(), game.playerCar.getLeftBoundingPoly())){
+                System.out.println("CAR DETECTED TO THE LEFT");
+                leftAlert = "CAR DETECTED TO THE LEFT";
+            }
+            else {
+                leftAlert = "Nothing Detected";
+            }
+            if (Intersector.overlapConvexPolygons(game.staticCarList.get(i).getStaticBoundingPoly(), game.playerCar.getRightBoundingPoly())){
+                rightAlert = "CAR DETECTED TO THE RIGHT";
+            }
+            else {
+                rightAlert = "Nothing Detected";
+            }
+            if (Intersector.overlapConvexPolygons(game.staticCarList.get(i).getStaticBoundingPoly(), game.playerCar.getFrontBoundingPoly())){
+                frontAlert = "CAR DETECTED IN FRONT";
+            }
+            else {
+                frontAlert = "Nothing Detected";
             }
         }
     }
@@ -118,6 +163,7 @@ public class MainScreen implements Screen {
         //.shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         game.shapeRenderer.setColor(Color.RED);
         game.isCarClicked = false;
+        // Drag and Drop Implementation
         for (int i = 1; i < game.staticCarList.size(); i++){
             game.shapeRenderer.polygon(game.staticCarList.get(i).getStaticBoundingPoly().getTransformedVertices());
             if (game.staticCarList.get(i).getStaticBoundingPoly().contains((int) (Gdx.input.getX()), (int) (720 - Gdx.input.getY()))){
@@ -125,16 +171,25 @@ public class MainScreen implements Screen {
                 System.out.println("Car Clicked");
                 //System.out.println("Can rotate...");
                 rotateStaticCar(i);
+                game.dialogStatic.setX(game.staticCarList.get(i).staticCarLocation.x - (game.playerCarNewSprite.getWidth() / 4));
+                game.dialogStatic.setY(game.staticCarList.get(i).staticCarLocation.y - (game.playerCarNewSprite.getHeight()) );
+                game.dialogStatic.setVisible(true);
                 if (Gdx.input.isTouched()){
                     System.out.println("Drag car");
                     game.staticCarList.get(i).staticCarLocation.x = (Gdx.input.getX() - (game.staticSprite.getWidth() / 2));
                     game.staticCarList.get(i).staticCarLocation.y = (720 - Gdx.input.getY() - (game.staticSprite.getHeight() / 2));
                     game.staticCarList.get(i).getStaticBoundingPoly().setPosition(game.staticCarList.get(i).staticCarLocation.x, game.staticCarList.get(i).staticCarLocation.y);
                 }
+                if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)){
+                    System.out.println("Car Deleted");
+                    game.staticCarList.remove(i);
+                    game.dialogStatic.setVisible(false);
+                }
             }
             else {
                 game.isCarClicked = false;
                 System.out.println("Car not clicked");
+                game.dialogStatic.setVisible(false);
             }
         }
     }

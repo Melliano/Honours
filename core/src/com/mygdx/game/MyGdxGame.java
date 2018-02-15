@@ -28,9 +28,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class MyGdxGame extends Game {
-	public Texture bodyImg, wheelImg, wheelImg2, newBodyImg, backgroundImg;
+	public Texture bodyImg, wheelImg, frontSensorImg, newBodyImg, backgroundImg;
 	public Rectangle testCrash;
-	public Sprite playerCarSprite, playerFrontWheel, playerBackWheel, playerCarNewSprite, backgroundSprite, staticSprite, staticSprite2, staticSprite3, staticSprite4, staticSprite5;
+	public Sprite playerCarSprite, playerFrontWheel, playerBackWheel, playerCarNewSprite, backgroundSprite, staticSprite, frontSensorSprite;
 	public SpriteBatch batch;
 	public BitmapFont font;
 	private Table table;
@@ -38,7 +38,7 @@ public class MyGdxGame extends Game {
 	private Vector2 velocity;
 	public CarTwo playerCar;
 	int value, counter;
-	Dialog dialog;
+	Dialog dialog, dialogStatic;
 	Stage stage;
 	TextButton button;
 	TextButton.TextButtonStyle style;
@@ -75,13 +75,14 @@ public class MyGdxGame extends Game {
 		playerBackWheel = new Sprite(wheelImg);
 		playerCarNewSprite = new Sprite(bodyImg);
 		staticSprite = new Sprite(bodyImg);
+		frontSensorSprite = new Sprite(wheelImg);
 
 		delta = 1/60;
-
 		playerCarNewSprite.setOrigin(playerCarNewSprite.getWidth() / 2, playerCarNewSprite.getHeight() / 2);
 		playerCarNewSprite.setSize(120, 50);
 		backgroundSprite.setSize(1280, 720);
 		staticSprite.setSize(120, 50);
+		frontSensorSprite.setSize(5, 50);
 		font.setColor(Color.RED);
 
 		testCrash = new Rectangle(20, 30, 20 , 20);
@@ -89,7 +90,7 @@ public class MyGdxGame extends Game {
 		testPolygon.setOrigin(testCrash.width/2 , testCrash.height/2);
 
 
-		playerCar = new CarTwo(playerCarNewSprite, playerFrontWheel, playerBackWheel);
+		playerCar = new CarTwo(playerCarNewSprite, playerFrontWheel, playerBackWheel, frontSensorSprite);
 		this.
 		acc = 0.2f;
 		friction = 0.01f;
@@ -105,14 +106,14 @@ public class MyGdxGame extends Game {
 
 		staticCarList =  new ArrayList<StaticCar>(Arrays.asList(new StaticCar(staticSprite, playerFrontWheel, playerBackWheel, 200, 200)));
 
-		dialog = new Dialog("Click Where you would like the car placed!",skin);
-		dialog.setColor(Color.RED);
+		dialog = new Dialog("Click where you would like the car placed!",skin);
+		dialogStatic = new Dialog(" - Click Escape to delete car \n - Drag and Drop car to move \n - User arrow keys to rotate", skin);
 		counter = 0;
 		button.addListener(new ClickListener(){
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				dialog.show(stage);
-				dialog.setX(360);
+				dialog.setX(500);
 				dialog.setY(200);
 				counter += 1;
 				Timer.Task schedule = Timer.schedule(new Timer.Task() {
@@ -121,6 +122,7 @@ public class MyGdxGame extends Game {
 						staticCarList.add(new StaticCar(staticSprite, playerFrontWheel, playerBackWheel, (int) (Gdx.input.getX() - (staticSprite.getWidth() / 2)), (int) (720 - Gdx.input.getY() - (staticSprite.getHeight() / 2))));
 						//staticCar = new StaticCar(staticSprite, playerFrontWheel, playerBackWheel, (int) (Gdx.input.getX() - (staticSprite.getWidth() / 2)), (int) (720 - Gdx.input.getY() - (staticSprite.getHeight() / 2)));
 						value = 1;
+						dialogStatic.show(stage);
 						dialog.hide();
 						System.out.println(counter);
 					}
@@ -128,7 +130,6 @@ public class MyGdxGame extends Game {
 			}
 		});
 		stage.addActor(button);
-
 
 		Gdx.input.setInputProcessor(stage);
 	}
@@ -171,6 +172,7 @@ public class MyGdxGame extends Game {
 	}
 	*/
 
+	//TBD : Perhaps increment speed???
 	public void updatePlayerCar() {
 
 		final float subtractSteer = 0.25f ;
@@ -183,14 +185,19 @@ public class MyGdxGame extends Game {
 		if (Gdx.input.isKeyPressed(Input.Keys.DOWN)){
 			playerCar.setCarSpeed((playerCar.getCarSpeed() - 0.5f));
 		}
-		if (Gdx.input.isKeyPressed(Input.Keys.LEFT)){
-			if (playerCar.getSteerAngle() > - playerCar.maxSteerAngle && playerCar.getSteerAngle() < playerCar.maxSteerAngle)
-				playerCar.setSteerAngle((playerCar.getSteerAngle() + 0.2f));
+		if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT)){
+			if (playerCar.getSteerAngle() >= (-playerCar.maxSteerAngle) && playerCar.getSteerAngle() < playerCar.maxSteerAngle) {
+				playerCar.setSteerAngle((playerCar.getSteerAngle() + 0.15f));
+				System.out.println(playerCar.getSteerAngle() + " " + playerCar.maxSteerAngle);
+			}
 		}
-		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
-			if (playerCar.getSteerAngle() > - playerCar.maxSteerAngle && playerCar.getSteerAngle() < playerCar.maxSteerAngle)
-				playerCar.setSteerAngle((playerCar.getSteerAngle() - 0.2f));
+		if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)){
+			if (playerCar.getSteerAngle() > (-playerCar.maxSteerAngle) && playerCar.getSteerAngle() <= playerCar.maxSteerAngle) {
+				playerCar.setSteerAngle((playerCar.getSteerAngle() - 0.15f));
+				System.out.println(playerCar.getSteerAngle() + " " + (-playerCar.maxSteerAngle));
+			}
 		}
+		/*
 		if (!Gdx.input.isKeyPressed(Input.Keys.RIGHT) && !Gdx.input.isKeyPressed(Input.Keys.LEFT)){
 			if (playerCar.getSteerAngle() > 0)
 				//System.out.println(Math.toDegrees(playerCar.getSteerAngle()));
@@ -199,11 +206,16 @@ public class MyGdxGame extends Game {
 				//System.out.println(Math.toDegrees(playerCar.getSteerAngle()));
 				playerCar.setSteerAngle(playerCar.getSteerAngle() + (0.4f));
 		}
+		*/
 		if (!Gdx.input.isKeyPressed(Input.Keys.UP) && !Gdx.input.isKeyPressed(Input.Keys.DOWN)){
-			if (playerCar.getCarSpeed() > 0)
-				playerCar.setCarSpeed(playerCar.getCarSpeed() - 0.3f);
-			if (playerCar.getCarSpeed() < 0)
-				playerCar.setCarSpeed(playerCar.getCarSpeed() + 0.3f);
+			if (playerCar.getCarSpeed() > 0) {
+				playerCar.setCarSpeed(playerCar.getCarSpeed() - 0.25f);
+				System.out.println("Current Speed " + playerCar.getCarSpeed());
+			}
+			if (playerCar.getCarSpeed() < 0) {
+				playerCar.setCarSpeed(playerCar.getCarSpeed() + 0.25f);
+				System.out.println("Current Speed " + playerCar.getCarSpeed());
+			}
 		}
 		playerCar.move();
 	}

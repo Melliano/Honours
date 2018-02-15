@@ -6,24 +6,26 @@ import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.sun.org.apache.bcel.internal.generic.NEW;
+import org.w3c.dom.css.Rect;
 
 /**
  * Created by Callum on 03/12/2017.
  */
 public class CarTwo {
 
-    Sprite car, frontWheel, backWheel;
+    Sprite car, frontWheel, backWheel, frontSensor;
     Vector2 carLocation, backWheelLoc, frontWheelLoc;
     private float carSpeed, steerAngle,  dt;
-    private Polygon boundingPoly;
-    private Rectangle bounds;
+    private Polygon boundingPoly, sensorBoundingPoly, leftBoundingPoly, rightBoundingPoly, frontBoundingPoly, backBoundingPoly;
+    private Rectangle bounds, sensorBounds, leftBounds, rightBounds, frontBounds, backBounds;
     float carHeading, maxSteerAngle, minSteerAngle, maxSpeed, wheelBase;
 
-    public CarTwo(Sprite car, Sprite frontWheel, Sprite backWheel){
+    public CarTwo(Sprite car, Sprite frontWheel, Sprite backWheel, Sprite frontSensor){
 
         this.car = car;
         this.frontWheel = frontWheel;
         this.backWheel = backWheel;
+        this.frontSensor = frontSensor;
         wheelBase = car.getWidth() - 40;
         carLocation = new Vector2(640,360);
         this.car.setOrigin(this.car.getWidth()/2, this.car.getHeight()/2);
@@ -40,9 +42,34 @@ public class CarTwo {
         boundingPoly = new Polygon(new float[]{0, 0, bounds.width, 0 , bounds.width, bounds.height, 0, bounds.height});
         boundingPoly.setOrigin(bounds.width/2, bounds.height/2);
 
+        sensorBounds = new Rectangle((carLocation.x - car.getWidth()), (carLocation.y - car.getHeight()), car.getWidth() + car.getWidth(),
+                    car.getHeight() + car.getHeight());
+        sensorBoundingPoly = new Polygon(new float[]{(-car.getWidth()), (-car.getHeight()), sensorBounds.width, (-car.getHeight()), sensorBounds.width, sensorBounds.height, (-car.getWidth()), sensorBounds.height});
+        sensorBoundingPoly.setOrigin(bounds.width / 2, bounds.height / 2);
+
+        leftBounds = new Rectangle((carLocation.x - car.getWidth()), (carLocation.y - car.getHeight()), car.getWidth(), car.getHeight());
+        leftBoundingPoly = new Polygon(new float[]{0, car.getWidth(), leftBounds.width, car.getWidth() , leftBounds.width, leftBounds.height, 0, leftBounds.height});
+        leftBoundingPoly.setOrigin(bounds.width / 2, bounds.height / 2);
+
+        rightBounds = new Rectangle((carLocation.x + car.getWidth()), (carLocation.y + car.getHeight()), car.getWidth(), car.getHeight());
+        rightBoundingPoly = new Polygon(new float[]{0, -car.getWidth() + 50, rightBounds.width, -car.getWidth()+50 , rightBounds.width, 0, 0, 0});
+        rightBoundingPoly.setOrigin(bounds.width / 2, bounds.height / 2);
+
+        frontBounds = new Rectangle((carLocation.x - car.getWidth()), (carLocation.y + car.getHeight()), car.getWidth(), car.getHeight());
+        frontBoundingPoly = new Polygon(new float[]{frontBounds.width , -frontBounds.width+car.getHeight(),  frontBounds.width * 2  ,-frontBounds.width + car.getHeight() , frontBounds.width * 2 ,car.getWidth() , frontBounds.width, car.getWidth()});
+        frontBoundingPoly.setOrigin(bounds.width / 2, bounds.height / 2);
+
+        backBounds = new Rectangle((carLocation.x - car.getWidth()), (carLocation.y + car.getHeight()), car.getWidth(), car.getHeight());
+        backBoundingPoly = new Polygon(new float[]{-backBounds.width, -frontBounds.width + car.getHeight(), 0 , -frontBounds.width + car.getHeight(), 0, frontBounds.width , -backBounds.width, frontBounds.width});
+        backBoundingPoly.setOrigin(bounds.width / 2, bounds.height / 2);
+
+        frontSensor.setX(carLocation.x);
+        frontSensor.setY(carLocation.y);
+        //frontSensor.setOrigin(getBoundingPoly().getX(), getBoundingPoly().getY());
+
         carSpeed = 0f;
-        maxSteerAngle = 0.65f;
-        minSteerAngle = -0.8f;
+        maxSteerAngle = 0.6f;
+        minSteerAngle = -0.6f;
         maxSpeed = 150f;
         carHeading = 0.0f;
         steerAngle = 0f;
@@ -84,6 +111,19 @@ public class CarTwo {
         carHeading = MathUtils.atan2(frontWheelLoc.y - backWheelLoc.y, frontWheelLoc.x - backWheelLoc.x);
         boundingPoly.setPosition((carLocation.x -  (wheelBase /2)),(carLocation.y - car.getHeight()/2));
         boundingPoly.setRotation((float)Math.toDegrees(carHeading));
+        sensorBoundingPoly.setPosition((carLocation.x - (wheelBase / 2)), (carLocation.y - car.getHeight()/2));
+        sensorBoundingPoly.setRotation((float)Math.toDegrees(carHeading));
+        leftBoundingPoly.setPosition((carLocation.x - (wheelBase / 2)), (carLocation.y - car.getHeight() / 2));
+        leftBoundingPoly.setRotation((float)Math.toDegrees(carHeading));
+        rightBoundingPoly.setPosition((carLocation.x - (wheelBase / 2)), (carLocation.y - car.getHeight() / 2));
+        rightBoundingPoly.setRotation((float)Math.toDegrees(carHeading));
+        frontBoundingPoly.setPosition((carLocation.x - (wheelBase / 2)), (carLocation.y - car.getHeight() / 2));
+        frontBoundingPoly.setRotation((float)Math.toDegrees(carHeading));
+        backBoundingPoly.setPosition((carLocation.x - wheelBase / 2), (carLocation.y - car.getHeight() / 2));
+        backBoundingPoly.setRotation((float)Math.toDegrees(carHeading));
+
+        //frontSensor.setPosition(boundingPoly.getX() + car.getWidth(), boundingPoly.getY() - (car.getHeight() / 2));
+        frontSensor.setRotation((float)Math.toDegrees(carHeading) + 90);
 
         ;
         //System.out.println(Math.toDegrees(maxSteerAngle));
@@ -122,5 +162,25 @@ public class CarTwo {
 
     public Polygon getBoundingPoly(){
             return boundingPoly;
+    }
+
+    public Polygon getSensorBoundingPoly(){
+        return sensorBoundingPoly;
+    }
+
+    public Polygon getLeftBoundingPoly(){
+        return leftBoundingPoly;
+    }
+
+    public Polygon getRightBoundingPoly(){
+        return rightBoundingPoly;
+    }
+
+    public Polygon getFrontBoundingPoly(){
+        return frontBoundingPoly;
+    }
+
+    public Polygon getBackBoundingPoly(){
+        return backBoundingPoly;
     }
 }

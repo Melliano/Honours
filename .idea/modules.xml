@@ -5,7 +5,14 @@
       <module fileurl="file://$PROJECT_DIR$/Honours.iml" filepath="$PROJECT_DIR$/Honours.iml" />
       <module fileurl="file://$PROJECT_DIR$/Test.iml" filepath="$PROJECT_DIR$/Test.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/core.iml" filepath="$PROJECT_DIR$/.idea/modules/core/core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/core_main.iml" filepath="$PROJECT_DIR$/.idea/modules/core/core_main.iml" group="core" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/core_test.iml" filepath="$PROJECT_DIR$/.idea/modules/core/core_test.iml" group="core" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/desktop/desktop.iml" filepath="$PROJECT_DIR$/.idea/modules/desktop/desktop.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/desktop/desktop_main.iml" filepath="$PROJECT_DIR$/.idea/modules/desktop/desktop_main.iml" group="desktop" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/desktop/desktop_test.iml" filepath="$PROJECT_DIR$/.idea/modules/desktop/desktop_test.iml" group="desktop" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/test.iml" filepath="$PROJECT_DIR$/.idea/modules/test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/core/test-core.iml" filepath="$PROJECT_DIR$/.idea/modules/core/test-core.iml" group="core" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/desktop/test-desktop.iml" filepath="$PROJECT_DIR$/.idea/modules/desktop/test-desktop.iml" group="desktop" />
     </modules>
   </component>
 </project>
