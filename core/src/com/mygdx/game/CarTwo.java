@@ -73,6 +73,7 @@ public class CarTwo {
         leftWheelPoly = new Polygon(new float[]{leftWheelBounds.width - 30 , 0 , leftWheelBounds.width - 10, 0, leftWheelBounds.width - 10 ,
                 10, leftWheelBounds.width - 30, 10});
         leftWheelPoly.setOrigin(bounds.width - 20, 5);
+        //lol
         System.out.println(leftWheelPoly.getOriginX() + " " + leftWheelPoly.getOriginY());
 
         frontSensor.setX(carLocation.x);
