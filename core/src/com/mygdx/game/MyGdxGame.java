@@ -195,6 +195,7 @@ public class MyGdxGame extends Game {
 			if (playerCar.getSteerAngle() > (-playerCar.maxSteerAngle) && playerCar.getSteerAngle() <= playerCar.maxSteerAngle) {
 				playerCar.setSteerAngle((playerCar.getSteerAngle() - 0.15f));
 				System.out.println(playerCar.getSteerAngle() + " " + (-playerCar.maxSteerAngle));
+				playerCar.rotateLeftWheel();
 			}
 		}
 		/*

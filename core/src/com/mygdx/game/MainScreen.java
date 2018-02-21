@@ -57,12 +57,14 @@ public class MainScreen implements Screen {
         game.shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         game.shapeRenderer.setColor(Color.RED);
         game.shapeRenderer.rect(game.testCrash.x, game.testCrash.y, game.testCrash.width, game.testCrash.height);
-        //game.shapeRenderer.polygon(game.playerCar.getBoundingPoly().getTransformedVertices());
+        game.shapeRenderer.polygon(game.playerCar.getBoundingPoly().getTransformedVertices());
         //game.shapeRenderer.polygon(game.playerCar.getSensorBoundingPoly().getTransformedVertices());
-        game.shapeRenderer.polygon(game.playerCar.getLeftBoundingPoly().getTransformedVertices());
-        game.shapeRenderer.polygon(game.playerCar.getRightBoundingPoly().getTransformedVertices());
-        game.shapeRenderer.polygon(game.playerCar.getFrontBoundingPoly().getTransformedVertices());
-        game.shapeRenderer.polygon(game.playerCar.getBackBoundingPoly().getTransformedVertices());
+        //game.shapeRenderer.polygon(game.playerCar.getLeftBoundingPoly().getTransformedVertices());
+        //game.shapeRenderer.polygon(game.playerCar.getRightBoundingPoly().getTransformedVertices());
+        //game.shapeRenderer.polygon(game.playerCar.getFrontBoundingPoly().getTransformedVertices());
+        //game.shapeRenderer.polygon(game.playerCar.getBackBoundingPoly().getTransformedVertices());
+        game.shapeRenderer.polygon(game.playerCar.getLeftWheelBoundingPoly().getTransformedVertices());
+        //game.shapeRenderer.polygon(game.playerCar.getLeftWheelPoly().getTransformedVertices());
 
         //game.playerCar.frontSensor.draw(game.batch);
         game.testPolygon.setPosition(game.testCrash.x, game.testCrash.y);

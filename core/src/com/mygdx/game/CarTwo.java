@@ -16,8 +16,8 @@ public class CarTwo {
     Sprite car, frontWheel, backWheel, frontSensor;
     Vector2 carLocation, backWheelLoc, frontWheelLoc;
     private float carSpeed, steerAngle,  dt;
-    private Polygon boundingPoly, sensorBoundingPoly, leftBoundingPoly, rightBoundingPoly, frontBoundingPoly, backBoundingPoly;
-    private Rectangle bounds, sensorBounds, leftBounds, rightBounds, frontBounds, backBounds;
+    private Polygon boundingPoly, sensorBoundingPoly, leftBoundingPoly, rightBoundingPoly, frontBoundingPoly, backBoundingPoly, leftWheelBoundingPoly, leftWheelPoly;
+    private Rectangle bounds, sensorBounds, leftBounds, rightBounds, frontBounds, backBounds, leftWheelBounds;
     float carHeading, maxSteerAngle, minSteerAngle, maxSpeed, wheelBase;
 
     public CarTwo(Sprite car, Sprite frontWheel, Sprite backWheel, Sprite frontSensor){
@@ -62,6 +62,18 @@ public class CarTwo {
         backBounds = new Rectangle((carLocation.x - car.getWidth()), (carLocation.y + car.getHeight()), car.getWidth(), car.getHeight());
         backBoundingPoly = new Polygon(new float[]{-backBounds.width, -frontBounds.width + car.getHeight(), 0 , -frontBounds.width + car.getHeight(), 0, frontBounds.width , -backBounds.width, frontBounds.width});
         backBoundingPoly.setOrigin(bounds.width / 2, bounds.height / 2);
+
+        leftWheelBounds = new Rectangle((carLocation.x - car.getWidth()), (carLocation.y - car.getHeight()), car.getWidth(), car.getHeight());
+        leftWheelBoundingPoly = new Polygon(new float[]{leftWheelBounds.width - 20 , leftWheelBounds.height /2 + 5 , leftWheelBounds.width, leftWheelBounds.height /2 + 5,
+                leftWheelBounds.width , leftWheelBounds.height /2 - 5, leftWheelBounds.width - 20, leftWheelBounds.height / 2 - 5});
+        leftWheelBoundingPoly.setOrigin(bounds.width / 2, bounds.height / 2);
+        //leftWheelBoundingPoly.setOrigin(leftWheelBounds.width - 20, 5);
+        System.out.println(leftWheelBoundingPoly.getOriginX() + " " + leftWheelBoundingPoly.getOriginY());
+
+        leftWheelPoly = new Polygon(new float[]{leftWheelBounds.width - 30 , 0 , leftWheelBounds.width - 10, 0, leftWheelBounds.width - 10 ,
+                10, leftWheelBounds.width - 30, 10});
+        leftWheelPoly.setOrigin(bounds.width - 20, 5);
+        System.out.println(leftWheelPoly.getOriginX() + " " + leftWheelPoly.getOriginY());
 
         frontSensor.setX(carLocation.x);
         frontSensor.setY(carLocation.y);
@@ -110,6 +122,7 @@ public class CarTwo {
 
         carHeading = MathUtils.atan2(frontWheelLoc.y - backWheelLoc.y, frontWheelLoc.x - backWheelLoc.x);
         boundingPoly.setPosition((carLocation.x -  (wheelBase /2)),(carLocation.y - car.getHeight()/2));
+        //boundingPoly.setRotation((float)Math.toDegrees(getSteerAngle()) + (float)Math.toDegrees(carHeading));
         boundingPoly.setRotation((float)Math.toDegrees(carHeading));
         sensorBoundingPoly.setPosition((carLocation.x - (wheelBase / 2)), (carLocation.y - car.getHeight()/2));
         sensorBoundingPoly.setRotation((float)Math.toDegrees(carHeading));
@@ -122,8 +135,15 @@ public class CarTwo {
         backBoundingPoly.setPosition((carLocation.x - wheelBase / 2), (carLocation.y - car.getHeight() / 2));
         backBoundingPoly.setRotation((float)Math.toDegrees(carHeading));
 
+        leftWheelBoundingPoly.setPosition((carLocation.x - (wheelBase / 2)), (carLocation.y - car.getHeight() /2));
+        leftWheelBoundingPoly.setRotation((float)Math.toDegrees(getSteerAngle()) + (float)Math.toDegrees(carHeading));
+
+        //leftWheelPoly.setPosition(leftWheelBoundingPoly.getX(), leftWheelBoundingPoly.getY());
+        //leftWheelPoly.setRotation((float)Math.toDegrees(getSteerAngle()) + (float)Math.toDegrees(carHeading));
         //frontSensor.setPosition(boundingPoly.getX() + car.getWidth(), boundingPoly.getY() - (car.getHeight() / 2));
         frontSensor.setRotation((float)Math.toDegrees(carHeading) + 90);
+
+        System.out.println(leftWheelPoly.getOriginX() + " " +  leftWheelPoly.getOriginY() + "HERE");
 
         ;
         //System.out.println(Math.toDegrees(maxSteerAngle));
@@ -182,5 +202,17 @@ public class CarTwo {
 
     public Polygon getBackBoundingPoly(){
         return backBoundingPoly;
+    }
+
+    public Polygon getLeftWheelBoundingPoly(){
+        return  leftWheelBoundingPoly;
+    }
+
+    public Polygon getLeftWheelPoly(){
+        return  leftWheelPoly;
+    }
+
+    public void rotateLeftWheel(){
+        leftWheelBoundingPoly.rotate(5);
     }
 }
