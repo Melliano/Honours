@@ -6,6 +6,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
@@ -17,6 +18,16 @@ import com.badlogic.gdx.utils.Timer;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.sun.org.apache.xpath.internal.SourceTree;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import org.neuroph.core.NeuralNetwork;
+import org.neuroph.*;
+import org.neuroph.nnet.MultiLayerPerceptron;
+import org.neuroph.nnet.Perceptron;
+
+
 public class MainScreen implements Screen {
 
     MyGdxGame game;
@@ -25,14 +36,54 @@ public class MainScreen implements Screen {
     Skin skin;
     Stage stage;
     TextButton button;
-    String behindAlert, frontAlert, leftAlert, rightAlert;
+    int recordValue, leftValue, rightValue;
+    double distToSpacevalue;
+    String behindAlert, frontAlert, leftAlert, rightAlert, FILE_HEADER, COMMA_DELIMITER, NEW_LINE_SEPERATOR;
+    Polygon carSpace;
     boolean carClicked;
+    NeuralNetwork neuralNetwork;
+    double minDistData, maxDistData, minSpaceData, maxSpaceData, minHeadingData, maxHeadingData,
+            minSpeedData, maxSpeedData, minAngleData, maxAngleData;
+    double normDist, normSpace, normHeading, normSpeed, normAngle;
+    double [] networkOutput;
+
+    FileWriter pw;
     public MainScreen(MyGdxGame game){
         this.game = game;
         behindAlert = "Nothing Detected";
         frontAlert = "Nothing Detected";
         leftAlert = "Nothing Detected";
         rightAlert = "Nothing Detected";
+        FILE_HEADER = "distance, spaceRotation, carRotation, forward, stop, backwards, left, centre, right";
+        COMMA_DELIMITER = ",";
+        NEW_LINE_SEPERATOR = "\n";
+        distToSpacevalue = 0;
+        recordValue = 0;
+        minDistData = 21.74247682;
+        maxDistData = 341.8017974;
+        minSpaceData = 90;
+        maxSpaceData = 270;
+        minHeadingData = -89.99306554;
+        maxHeadingData = 269.4662121;
+        minSpeedData = 0;
+        maxSpeedData = 50;
+        minAngleData = -34.37746907;
+        maxAngleData = 34.37746907;
+        neuralNetwork = NeuralNetwork.load("C:\\Users\\Melliano\\Documents\\NetBeansProjects\\Test\\Neural Networks\\NewNeuralNetwork6.nnet");
+        //neuralNetwork.setInput(0.884, 0, 0.35);
+        //neuralNetwork.calculate();
+        //double[] networkOutput = neuralNetwork.getOutput();
+        //System.out.println(networkOutput.length);
+        //System.out.println("output " + networkOutput[0] + " " + networkOutput[1] + " ");
+        try {
+            System.out.println("Tried");
+            pw = new FileWriter("C:\\Users\\Melliano\\Documents\\Round4.csv", true);
+            pw.append(FILE_HEADER);
+            pw.append(NEW_LINE_SEPERATOR);
+            System.out.println("Appended");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     @Override
     public void show() {
@@ -43,7 +94,6 @@ public class MainScreen implements Screen {
     public void render(float delta) {
         //Gdx.gl.glClearColor(0, 0, 0.2f, 1);
         //Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
         game.batch.begin();
         game.backgroundSprite.draw(game.batch);
         //batch.draw(backgroundSprite,0, 0);
@@ -56,30 +106,88 @@ public class MainScreen implements Screen {
         game.playerCarNewSprite.draw(game.batch);
         game.shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         game.shapeRenderer.setColor(Color.RED);
-        game.shapeRenderer.rect(game.testCrash.x, game.testCrash.y, game.testCrash.width, game.testCrash.height);
+        //game.shapeRenderer.rect(game.testCrash.x, game.testCrash.y, game.testCrash.width, game.testCrash.height);
         game.shapeRenderer.polygon(game.playerCar.getBoundingPoly().getTransformedVertices());
         //game.shapeRenderer.polygon(game.playerCar.getSensorBoundingPoly().getTransformedVertices());
-        //game.shapeRenderer.polygon(game.playerCar.getLeftBoundingPoly().getTransformedVertices());
-        //game.shapeRenderer.polygon(game.playerCar.getRightBoundingPoly().getTransformedVertices());
-        //game.shapeRenderer.polygon(game.playerCar.getFrontBoundingPoly().getTransformedVertices());
-        //game.shapeRenderer.polygon(game.playerCar.getBackBoundingPoly().getTransformedVertices());
+        game.shapeRenderer.polygon(game.playerCar.getLeftBoundingPoly().getTransformedVertices());
+        game.shapeRenderer.polygon(game.playerCar.getRightBoundingPoly().getTransformedVertices());
+        game.shapeRenderer.polygon(game.playerCar.getFrontBoundingPoly().getTransformedVertices());
+        game.shapeRenderer.polygon(game.playerCar.getBackBoundingPoly().getTransformedVertices());
         game.shapeRenderer.polygon(game.playerCar.getLeftWheelBoundingPoly().getTransformedVertices());
+        //Car Spaces Testing
+        /*
+        game.shapeRenderer.polygon(game.carSpacePoly.getTransformedVertices());
+        game.shapeRenderer.polygon(game.carSpacePolyTwo.getTransformedVertices());
+        game.shapeRenderer.polygon(game.carSpacePolyThree.getTransformedVertices());
+        game.shapeRenderer.polygon(game.carSpacePolyFour.getTransformedVertices());
+        game.shapeRenderer.polygon(game.carSpacePolyFive.getTransformedVertices());
+        game.shapeRenderer.polygon(game.carSpacePolySix.getTransformedVertices());
+        game.shapeRenderer.polygon(game.carSpacePolySeven.getTransformedVertices());
+        game.shapeRenderer.polygon(game.carSpacePolyEight.getTransformedVertices());
+        game.shapeRenderer.polygon(game.carSpacePolyNine.getTransformedVertices());
+        game.shapeRenderer.polygon(game.carSpacePolyTen.getTransformedVertices());
+        */
+        game.shapeRenderer.polygon(game.playerCar.getCentrePoly().getTransformedVertices());
         //game.shapeRenderer.polygon(game.playerCar.getLeftWheelPoly().getTransformedVertices());
 
+        for (int i = 0; i < game.polygonsList.size(); i ++){
+            game.shapeRenderer.polygon(game.polygonsList.get(i).getSpacePoly().getTransformedVertices());
+        }
         //game.playerCar.frontSensor.draw(game.batch);
         game.testPolygon.setPosition(game.testCrash.x, game.testCrash.y);
-
+        /*
+        game.carSpacePoly.setPosition(690, 165);
+        game.carSpacePolyTwo.setPosition(690, 255);
+        game.carSpacePolyThree.setPosition(690, 355);
+        game.carSpacePolyFour.setPosition(690, 445);
+        game.carSpacePolyFive.setPosition(690, 545);
+        game.carSpacePolySix.setPosition( 1200, 165);
+        game.carSpacePolySeven.setPosition(1200, 255);
+        game.carSpacePolyEight.setPosition(1200, 355);
+        game.carSpacePolyNine.setPosition(1200, 445);
+        game.carSpacePolyTen.setPosition(1200, 545);
+        */
+        //sensorCheck();
         game.font.draw(game.batch, "Coordinates of car : " + game.playerCar.carLocation.x + " , " + game.playerCar.carLocation.y + "\nSpeed of car: " + game.playerCar.getCarSpeed()
-                + "\nCar heading: " + (Math.toDegrees(game.playerCar.getCarHeading())+ 90) + "\nSteer Angle: " + Math.toDegrees(game.playerCar.getSteerAngle())
-                    + "\nFront Sensor: " + frontAlert + "\nBack Sensor: " + behindAlert + "\nLeft Side Sensor: " + leftAlert +  "\nRight Side Sensor: " + rightAlert,10, 680);
+                + "\nCar heading: " + (Math.toDegrees(-game.playerCar.getCarHeading()) + 180) + "\nSteer Angle: " + Math.toDegrees(game.playerCar.getSteerAngle())
+                    + "\nFront Sensor: " + frontAlert + "\nBack Sensor: " + behindAlert + "\nLeft Side Sensor: " + leftAlert +  "\nRight Side Sensor: " + rightAlert + "\nMidpoint: "
+                        + (
+                                game.playerCar.getCentrePoly().getX() + 50) + " , " + game.playerCar.getCentrePoly().getY() + " , " + game.playerCarNewSprite.getX()
+                        + "\n Forward Value: " + game.forwardValue + " Stop Value " + game.stopValue + " Reverse Value "+ game.reverseValue + "\nDistance to nearest space: " + distToSpacevalue
+                        +"\nMidpoint: " + game.playerCar.getBoundingPoly().getX() + "\nLeftValue: " + game.leftValue + " RightValue: " + game.rightValue + " CentreValue :" +
+                game.centreValue,10, 680);
         //batch.draw(playerCarSprite, playerCar.carLocation.x, playerCar.carLocation.y);
-        game.batch.draw(game.playerBackWheel, game.playerCar.backWheelLoc.x, game.playerCar.backWheelLoc.y, 20 , 10);
-        game.batch.draw(game.playerFrontWheel, game.playerCar.frontWheelLoc.x, game.playerCar.frontWheelLoc.y, 20, 10);
+        //game.batch.draw(game.playerBackWheel, game.playerCar.backWheelLoc.x, game.playerCar.backWheelLoc.y, 20 , 10);
+        //game.batch.draw(game.playerFrontWheel, game.playerCar.frontWheelLoc.x, game.playerCar.frontWheelLoc.y, 20, 10);
         game.updatePlayerCar();
         collisionCheck();
         sensorCheck();
+        editStaticCar();
+        if (game.scanValue == 1){
+            game.scanSpace();
+        }
+        if (game.spaceValue == 1){
+            System.out.println("Distance to nearest space " + " " + game.distanceToSpace());
+            distToSpacevalue = game.distanceToSpace();
+        }
+        //System.out.println("Distance to closest free space " + " " + game.lowestDiff + "\nThe space is  - " + game.counter);
         if (game.value == 1){
-            editStaticCar();
+           //editStaticCar();
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.SPACE)){
+            recordValue = 0;
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.H)) {
+            recordValue = 1;
+            game.playerCar.setCarSpeed(50);
+        }
+        if (recordValue == 1){
+            try {
+                recordData();
+                normalizeInput();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         game.batch.end();
         game.shapeRenderer.end();
@@ -96,34 +204,144 @@ public class MainScreen implements Screen {
         }
     }
 
+    public void normalizeInput(){
+
+        double firstHeading = (Math.toDegrees(-game.playerCar.getCarHeading()) + 90 - minHeadingData);
+        double secondHeading = (maxHeadingData - minHeadingData);
+
+        normDist = ((distToSpacevalue - minDistData) / (maxDistData - minDistData));
+        normSpace = ((game.rotation - minSpaceData) / (maxSpaceData - minSpaceData));
+        normHeading = firstHeading / secondHeading;
+        //normHeading = ((Math.toDegrees(-game.playerCar.getCarHeading() + 90) - minHeadingData) / (maxHeadingData - minHeadingData));
+        normSpeed = ((game.playerCar.getCarSpeed() - minSpeedData) / (maxSpeedData - minSpeedData));
+        normAngle = ((Math.toDegrees(game.playerCar.getSteerAngle()) - minAngleData) / (maxAngleData - minAngleData));
+
+        neuralNetwork.setInput(normDist, normSpace, normHeading);
+        System.out.println("Input = " + normDist + " , " + normSpace + " , " + normHeading);
+        neuralNetwork.calculate();
+        networkOutput = neuralNetwork.getOutput();
+        //System.out.println("First " + firstHeading + " Second" + secondHeading);
+        //System.out.println(normHeading);
+        //System.out.println((Math.toDegrees(-game.playerCar.getCarHeading() + 90) - minHeadingData));
+        //System.out.println(maxHeadingData - minHeadingData);
+        //System.out.println(normDist + " " + normSpace + " " + normHeading);
+
+        //Stopping car
+        //Forward Neuron
+        if (networkOutput[0] < 0.2){
+            //game.playerCar.setCarSpeed(0);
+        }
+        else if(networkOutput[0] > 0.8){
+            game.playerCar.setCarSpeed(50);
+        }
+
+        //Stop Neuron
+        if (networkOutput[1] < 0.2){
+            //Nothing
+        }
+        else if (networkOutput[1] >= 0.8){
+            game.playerCar.setCarSpeed(0);
+        }
+
+        //Back neuron
+        if (networkOutput[2] <= 0.2){
+            // Nothing
+        }
+        else if (networkOutput[2] >= 0.8){
+            game.playerCar.setCarSpeed(-50);
+        }
+
+        //left neuron
+        if (networkOutput[3] <= 0.2){
+            //Nothing
+        }
+        else if (networkOutput[3] >= 0.8){
+            game.playerCar.setSteerAngle(0.60f);
+        }
+
+        //Centre neuron
+        if (networkOutput[4] <= 0.2){
+            //nothing
+        }
+        else if (networkOutput[4] >= 0.8){
+            game.playerCar.setSteerAngle(0);
+        }
+
+        //Right neuron
+        if (networkOutput[5] <= 0.2){
+            //Nothing
+        }
+        else if (networkOutput[5] >= 0.8){
+            game.playerCar.setSteerAngle(-0.60f);
+        }
+
+        System.out.println(networkOutput[0] + " , " + networkOutput[1] + " , " + networkOutput[2] + " , " + networkOutput[3] + " , " + networkOutput[4] + " , " + networkOutput[5]);
+    }
+
+    public void recordData() throws IOException {
+        //System.out.println("Recording data");
+        //Inputs -- 3
+        pw.append(String.valueOf(distToSpacevalue));
+        pw.append(COMMA_DELIMITER);
+        pw.append(String.valueOf(game.rotation));
+        pw.append(COMMA_DELIMITER);
+        pw.append(String.valueOf((Math.toDegrees(-game.playerCar.getCarHeading()) + 90)));
+        pw.append(COMMA_DELIMITER);
+        // Outputs -- 6
+        pw.append(String.valueOf(game.forwardValue));
+        pw.append(COMMA_DELIMITER);
+        pw.append(String.valueOf(game.stopValue));
+        pw.append(COMMA_DELIMITER);
+        pw.append(String.valueOf(game.reverseValue));
+        pw.append(COMMA_DELIMITER);
+        pw.append(String.valueOf(game.leftValue));
+        pw.append(COMMA_DELIMITER);
+        pw.append(String.valueOf(game.centreValue));
+        pw.append(COMMA_DELIMITER);
+        pw.append(String.valueOf(game.rightValue));
+        //New Frame
+        pw.append(NEW_LINE_SEPERATOR);
+        pw.flush();
+    }
+
     public void sensorCheck(){
-        for (int i = 1; i < game.staticCarList.size(); i++){
+        int backChecker = 0;
+        int frontChecker = 0;
+        int leftChecker = 0;
+        int rightChecker = 0;
+        //System.out.println(game.staticCarList.size() +  "SIZE");
+        for (int i = 0; i < game.staticCarList.size(); i++){
+            //System.out.println(i);
             if (Intersector.overlapConvexPolygons(game.staticCarList.get(i).getStaticBoundingPoly(), game.playerCar.getBackBoundingPoly())){
-                System.out.println("CAR DETECTED BEHIND");
+                //System.out.println("CAR DETECTED BEHIND");
                 behindAlert = "CAR DETECTED BEHIND";
-            }
-            else {
-                behindAlert = "Nothing Detected";
+                backChecker = 1;
             }
             if (Intersector.overlapConvexPolygons(game.staticCarList.get(i).getStaticBoundingPoly(), game.playerCar.getLeftBoundingPoly())){
-                System.out.println("CAR DETECTED TO THE LEFT");
+                //System.out.println("CAR DETECTED TO THE LEFT");
                 leftAlert = "CAR DETECTED TO THE LEFT";
-            }
-            else {
-                leftAlert = "Nothing Detected";
+                leftChecker = 1;
             }
             if (Intersector.overlapConvexPolygons(game.staticCarList.get(i).getStaticBoundingPoly(), game.playerCar.getRightBoundingPoly())){
                 rightAlert = "CAR DETECTED TO THE RIGHT";
-            }
-            else {
-                rightAlert = "Nothing Detected";
+                rightChecker = 1;
             }
             if (Intersector.overlapConvexPolygons(game.staticCarList.get(i).getStaticBoundingPoly(), game.playerCar.getFrontBoundingPoly())){
                 frontAlert = "CAR DETECTED IN FRONT";
+                frontChecker = 1;
             }
-            else {
-                frontAlert = "Nothing Detected";
-            }
+        }
+        if (backChecker < 1){
+            behindAlert = "Nothing Detected";
+        }
+        if (frontChecker < 1){
+            frontAlert = "Nothing Detected";
+        }
+        if (leftChecker < 1){
+            leftAlert = "Nothing Detected";
+        }
+        if (rightChecker < 1){
+            rightAlert = "Nothing Detected";
         }
     }
 
@@ -171,10 +389,12 @@ public class MainScreen implements Screen {
             if (game.staticCarList.get(i).getStaticBoundingPoly().contains((int) (Gdx.input.getX()), (int) (720 - Gdx.input.getY()))){
                 game.isCarClicked = true;
                 System.out.println("Car Clicked");
+                System.out.println(game.staticCarList.size() + "Size");
                 //System.out.println("Can rotate...");
                 rotateStaticCar(i);
                 game.dialogStatic.setX(game.staticCarList.get(i).staticCarLocation.x - (game.playerCarNewSprite.getWidth() / 4));
                 game.dialogStatic.setY(game.staticCarList.get(i).staticCarLocation.y - (game.playerCarNewSprite.getHeight()) );
+                System.out.println(game.staticCarList.get(i).staticCarLocation.x + " < " + game.staticCarList.get(i).staticCarLocation.y);
                 game.dialogStatic.setVisible(true);
                 if (Gdx.input.isTouched()){
                     System.out.println("Drag car");
@@ -190,8 +410,8 @@ public class MainScreen implements Screen {
             }
             else {
                 game.isCarClicked = false;
-                System.out.println("Car not clicked");
-                game.dialogStatic.setVisible(false);
+                //System.out.println("Car not clicked");
+                //   game.dialogStatic.setVisible(false);
             }
         }
     }
