@@ -84,9 +84,9 @@ public class CarTwo {
         //frontSensor.setOrigin(getBoundingPoly().getX(), getBoundingPoly().getY());
 
         carSpeed = 0f;
-        maxSteerAngle = 0.60f;
-        minSteerAngle = -0.60f;
-        maxSpeed = 150f;
+        maxSteerAngle = 0.6000001f;
+        minSteerAngle = -0.6000001f;
+        maxSpeed = 50f;
         carHeading = -55.0f;
         steerAngle = 0f;
         wheelBase = car.getWidth() - 70;

@@ -46,7 +46,7 @@ public class MyGdxGame extends Game {
 	int value, counter, scanValue, spaceValue;
 	Dialog dialog, dialogStatic;
 	Stage stage;
-	TextButton button, scanButton;
+	TextButton button, scanButton, resetButton;
 	TextButton.TextButtonStyle style;
 	Skin skin;
 	TextureAtlas atlas;
@@ -121,10 +121,10 @@ public class MyGdxGame extends Game {
 		polygonsList.add(new ParkingSpace(1200, 545));
 		for (int i = 0; i < polygonsList.size(); i++){
 			if (polygonsList.get(i).x == 690){
-				polygonsList.get(i).getSpacePoly().setRotation(270);
+				polygonsList.get(i).getSpacePoly().setRotation(360);
 			}
 			else if (polygonsList.get(i).x == 1200){
-				polygonsList.get(i).getSpacePoly().setRotation(90);
+				polygonsList.get(i).getSpacePoly().setRotation(180);
 			}
 		}
 
@@ -185,6 +185,13 @@ public class MyGdxGame extends Game {
 		scanButton.setX(0);
 		scanButton.setY(340);
 		scanButton.setColor(Color.RED);
+		//Reset car position
+		resetButton = new TextButton("Reset position", skin, "default");
+		resetButton.setWidth(200);
+		resetButton.setHeight(50);
+		resetButton.setX(0);
+		resetButton.setY(280);
+		resetButton.setColor(Color.RED);
 
 		staticCarList = new ArrayList<StaticCar>(Arrays.asList(new StaticCar(staticSprite, playerFrontWheel, playerBackWheel, 200, 200)));
 
@@ -234,8 +241,19 @@ public class MyGdxGame extends Game {
 				}, 1);
 			}
 		});
+		resetButton.addListener(new ClickListener(){
+			@Override
+			public void clicked(InputEvent event, float x, float y){
+				playerCar.carLocation.x = 900;
+				playerCar.carLocation.y = 50;
+				playerCar.setCarSpeed(0);
+				playerCar.setCarHeading(-55.0f);
+				playerCar.setSteerAngle(0);
+			}
+		});
 		stage.addActor(button);
 		stage.addActor(scanButton);
+		stage.addActor(resetButton);
 		Gdx.input.setInputProcessor(stage);
 	}
 
@@ -318,15 +336,17 @@ public class MyGdxGame extends Game {
 			}
 			//playerCar.setCarSpeed((playerCar.getCarSpeed() - 1f));
 		}
-		if (Gdx.input.isKeyJustPressed(Input.Keys.LEFT)) {
-			if (playerCar.getSteerAngle() >= (-playerCar.maxSteerAngle) && playerCar.getSteerAngle() < playerCar.maxSteerAngle) {
-				playerCar.setSteerAngle((playerCar.getSteerAngle() + 0.60f));
+		if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+			if (playerCar.getSteerAngle() >= (-playerCar.maxSteerAngle) && playerCar.getSteerAngle() < playerCar.maxSteerAngle - 0.024 ) {
+				playerCar.setSteerAngle((playerCar.getSteerAngle() + (float) 0.024));;
+				System.out.println(playerCar.getSteerAngle() + " , " + playerCar.maxSteerAngle);
 				//System.out.println(playerCar.getSteerAngle() + " " + playerCar.maxSteerAngle);
 			}
 		}
-		if (Gdx.input.isKeyJustPressed(Input.Keys.RIGHT)) {
-			if (playerCar.getSteerAngle() > (-playerCar.maxSteerAngle) && playerCar.getSteerAngle() <= playerCar.maxSteerAngle) {
-				playerCar.setSteerAngle((playerCar.getSteerAngle() - 0.60f));
+		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+			if (playerCar.getSteerAngle() > (-playerCar.maxSteerAngle + 0.024) && playerCar.getSteerAngle() <= playerCar.maxSteerAngle) {
+				playerCar.setSteerAngle((playerCar.getSteerAngle() - (float) 0.024));
+				System.out.println(playerCar.getSteerAngle() + " , " + playerCar.maxSteerAngle);
 				//System.out.println(playerCar.getSteerAngle() + " " + (-playerCar.maxSteerAngle));
 			}
 		}
