@@ -40,15 +40,17 @@ public class MyGdxGame extends Game {
 	private Table table;
 	private OrthographicCamera camera;
 	private Vector2 velocity;
-	double lowestDiff;
+	double lowestDiff, score;
+	int yDiff, xDiff;
 	public CarTwo playerCar;
 	int leftValue, rightValue, centreValue, forwardValue, stopValue, reverseValue;
 	int value, counter, scanValue, spaceValue;
-	Dialog dialog, dialogStatic;
+	Dialog dialog, dialogStatic, dialogScore;
 	Stage stage;
 	TextButton button, scanButton, resetButton;
 	TextButton.TextButtonStyle style;
 	Skin skin;
+	Label.LabelStyle labelStyle;
 	TextureAtlas atlas;
 	MainMenuScreen mainMenuScreen;
 	MainScreen mainScreen;
@@ -109,18 +111,18 @@ public class MyGdxGame extends Game {
 
 		carSpacePoly = new com.badlogic.gdx.math.Polygon(new float[]{0, 0, 25, 0, 25, 25, 0, 25});
 		carSpacePoly.setOrigin(12, 12);
-		polygonsList.add(new ParkingSpace(690, 165));
-		polygonsList.add(new ParkingSpace(690, 255));
-		polygonsList.add(new ParkingSpace(690, 355));
-		polygonsList.add(new ParkingSpace(690, 445));
-		polygonsList.add(new ParkingSpace(690, 545));
+		polygonsList.add(new ParkingSpace(620, 165));
+		polygonsList.add(new ParkingSpace(620, 255));
+		polygonsList.add(new ParkingSpace(620, 355));
+		polygonsList.add(new ParkingSpace(620, 445));
+		polygonsList.add(new ParkingSpace(620, 545));
 		polygonsList.add(new ParkingSpace(1200, 165));
 		polygonsList.add(new ParkingSpace(1200, 255));
 		polygonsList.add(new ParkingSpace(1200, 355));
 		polygonsList.add(new ParkingSpace(1200, 445));
 		polygonsList.add(new ParkingSpace(1200, 545));
 		for (int i = 0; i < polygonsList.size(); i++){
-			if (polygonsList.get(i).x == 690){
+			if (polygonsList.get(i).x == 620){
 				polygonsList.get(i).getSpacePoly().setRotation(360);
 			}
 			else if (polygonsList.get(i).x == 1200){
@@ -169,7 +171,13 @@ public class MyGdxGame extends Game {
 				acc = 0.2f;
 		friction = 0.01f;
 
+		yDiff = 0;
+		xDiff = 0;
+
 		skin = new Skin(Gdx.files.internal("uiskin.json"));
+		//labelStyle = new Label.LabelStyle();
+		//labelStyle.font = new BitmapFont(Gdx.files.internal("default.fnt"));
+		//labelStyle.fontColor = Color.RED;
 		stage = new Stage(new ScreenViewport());
 		//Add Car Button
 		button = new TextButton("Add Car", skin, "default");
@@ -198,6 +206,7 @@ public class MyGdxGame extends Game {
 		dialog = new Dialog("Click where you would like the car placed!", skin);
 		dialogStatic = new Dialog(" - Click Escape to delete car \n - Drag and Drop car to move \n - User arrow keys to rotate", skin);
 		dialogStatic.show(stage);
+		//dialogScore = new Dialog("You scored " + score , skin);
 		counter = 0;
 		//Constructing first scenario
 		staticCarList.add(new StaticCar(staticSprite, playerFrontWheel, playerBackWheel, 690 - (int) playerCarNewSprite.getHeight(), 165 - (int) (playerCarNewSprite.getHeight() / 4)));
@@ -249,12 +258,13 @@ public class MyGdxGame extends Game {
 				playerCar.setCarSpeed(0);
 				playerCar.setCarHeading(-55.0f);
 				playerCar.setSteerAngle(0);
+
 			}
 		});
 		stage.addActor(button);
 		stage.addActor(scanButton);
 		stage.addActor(resetButton);
-		Gdx.input.setInputProcessor(stage);
+		//Gdx.input.setInputProcessor(stage);
 	}
 
 	public double distanceToSpace(){
@@ -263,11 +273,15 @@ public class MyGdxGame extends Game {
 		int yCoord;
 		double distance;
 
-		xCoord = freeSpacesList.get(counter).x;
-		yCoord = freeSpacesList.get(counter).y;
 
-		distance = Math.sqrt(Math.pow((xCoord - (playerCar.getCentrePoly().getX())), 2) +
-				Math.pow((playerCar.getCentrePoly().getY() - yCoord), 2));
+		xCoord = (int) (freeSpacesList.get(counter).x + 12.5);
+		yCoord = (int) (freeSpacesList.get(counter).y + 12.5);
+
+		yDiff = (int) (yCoord - (playerCar.getCentrePoly().getY() + playerCarNewSprite.getHeight() / 2));
+		xDiff = (int) (xCoord - (playerCar.getCentrePoly().getX() + playerCarNewSprite.getWidth() / 2));
+
+		distance = Math.sqrt(Math.pow((xCoord - (playerCar.getCentrePoly().getX() + (playerCarNewSprite.getWidth() / 2))), 2) +
+				Math.pow(((playerCar.getCentrePoly().getY() + playerCarNewSprite.getHeight() / 2 )- yCoord), 2));
 		rotation = freeSpacesList.get(counter).getSpacePoly().getRotation();
 		//System.out.println("The rotation of space " + counter + " is " + rotation);
 
@@ -464,6 +478,7 @@ public class MyGdxGame extends Game {
 			}
 		}
 		System.out.println(totalDiff);
+		/**
 		if (playerCar.getCentrePoly().getY() < nearestY - playerCarNewSprite.getWidth()){
 			playerCar.setCarSpeed(50);
 		}
@@ -473,7 +488,9 @@ public class MyGdxGame extends Game {
 			scanValue = 0;
 			return;
 		}
+		 */
 		spaceValue = 1;
+		scanValue = 0;
 	}
 
 	/*
