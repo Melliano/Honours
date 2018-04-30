@@ -43,7 +43,7 @@ public class MainMenuScreen implements Screen {
          font.draw(batch, "Welcome to NN simulator " + "\nHit space to continue", 500, 380);
 
          batch.end();
-         if (Gdx.input.isKeyPressed(Input.Keys.SPACE)){
+         if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)){
              System.out.println("HELLO THERE");;
              game.setScreen(new MainScreen(game));
          }
